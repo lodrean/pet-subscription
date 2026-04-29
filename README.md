@@ -1,17 +1,19 @@
-# 🛒 Pet Subscription — Android Billing + Firebase
+# 🛒 Pet Subscription + 🤖 AI Photo Editor
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blueviolet?logo=kotlin)](https://kotlinlang.org/)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-2024.02.00-brightgreen?logo=android)](https://developer.android.com/jetpack/compose)
 [![Billing](https://img.shields.io/badge/Google%20Play%20Billing-8.3.0-orange?logo=google-play)](https://developer.android.com/google/play/billing)
 [![Firebase](https://img.shields.io/badge/Firebase-Analytics%20%7C%20Firestore-yellow?logo=firebase)](https://firebase.google.com/)
+[![Gemini](https://img.shields.io/badge/Gemini%20AI-1.5%20Flash-blue?logo=google)](https://ai.google.dev/)
 
-> Минимальный пет-проект для демонстрации организации подписочного сервиса в Android с серверной синхронизацией через Firebase.
+> Android pet-project: подписочная система через Google Play Billing Library + AI фоторедактор на базе Gemini API.  
+> Стек: Jetpack Compose, MVVM, Koin, Firebase, Coroutines.
 
 ---
 
-## 📹 Демо
+## 📱 Скриншоты
 
-| Экран подписок | Премиум контент |
+| Подписки | AI Photo Editor |
 | :---: | :---: |
 | *(добавь скриншот)* | *(добавь скриншот)* |
 
@@ -20,71 +22,66 @@
 ## 🏗 Архитектура
 
 ```
-┌─────────────────┐
-│  UI (Compose)   │
-│  Subscription   │
-│     Screen      │
-└────────┬────────┘
-         │ StateFlow
-┌────────▼────────┐
-│   ViewModel     │
-│ SubscriptionVM  │
-└────────┬────────┘
-         │
-┌────────▼──────────────────┐
-│  BillingRepositoryImpl    │
-│  (BillingClient wrapper)  │
-└────────┬──────────────────┘
-         │
-    ┌────┴────┐
-    │         │
-┌───▼───┐  ┌──▼─────────────┐
-│Google │  │  Firebase       │
-│ Play  │  │  Analytics      │
-│       │  │  Firestore      │
-└───────┘  └─────────────────┘
+┌─────────────────────────────────────────────┐
+│              UI (Compose)                    │
+│  ┌─────────────┐      ┌─────────────────┐   │
+│  │ Subscription│      │  AI Photo Editor│   │
+│  │    Screen   │      │     Screen      │   │
+│  └──────┬──────┘      └────────┬────────┘   │
+│         │ StateFlow             │ StateFlow  │
+│  ┌──────▼──────┐      ┌────────▼────────┐   │
+│  │ Subscription│      │  PhotoEditor    │   │
+│  │   ViewModel │      │    ViewModel    │   │
+│  └──────┬──────┘      └────────┬────────┘   │
+│         │                       │            │
+│  ┌──────▼──────┐      ┌────────▼────────┐   │
+│  │  Billing    │      │  GeminiService  │   │
+│  │ Repository  │      │  ImageFilters   │   │
+│  └──────┬──────┘      └─────────────────┘   │
+│         │                                    │
+│    ┌────┴────┐                               │
+│    │         │                               │
+│ ┌──▼───┐  ┌──▼─────────────┐                │
+│ │Google│  │  Firebase       │                │
+│ │ Play │  │  Analytics      │                │
+│ │      │  │  Firestore      │                │
+│ └──────┘  └─────────────────┘                │
+└─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Стек
+## 🚀 Функционал
+
+### 💳 Подписочная система
+- Запрос доступных подписок через Google Play Billing Library 8.3.0
+- Покупка и подтверждение (acknowledge) подписки
+- Проверка активных подписок при старте приложения
+- Firebase Analytics событий покупок
+- Firestore синхронизация статуса подписки
+
+### 🤖 AI Photo Editor
+- Выбор фото из галереи (Photo Picker)
+- Локальные фильтры на Bitmap: Grayscale, Sepia, Brightness, Contrast
+- Интеграция с **Gemini 1.5 Flash** — анализ изображений по текстовому промпту
+- Отправка фото + промпта в Google Generative AI API
+
+---
+
+## 🛠 Стек
 
 | Технология | Версия | Назначение |
 |-----------|--------|-----------|
 | **Kotlin** | 1.9.22 | Язык |
 | **Jetpack Compose** | BOM 2024.02.00 | UI |
+| **Compose Navigation** | 2.7.7 | Навигация между экранами |
 | **Google Play Billing** | 8.3.0 (core) | Покупки и подписки |
-| **Firebase Analytics** | 33.7.0 | Аналитика событий |
-| **Firebase Firestore** | 33.7.0 | Облачное хранение статуса |
+| **Gemini AI** | 0.9.0 | Генеративный AI |
+| **Firebase Analytics** | 33.7.0 | Аналитика |
+| **Firebase Firestore** | 33.7.0 | Облачное хранение |
 | **Koin** | 3.5.3 | DI |
-| **Coroutines + StateFlow** | 1.7.3 | Асинхронность и реактивность |
-
-> Почему `billing` core вместо `billing-ktx`?  
-> PBL 8.3.0 ktx требует Kotlin 2.x. В пет-проекте используем core API с `suspendCancellableCoroutine` — это демонстрирует более глубокое понимание корутин на собеседовании.
-
----
-
-## ✨ Что реализовано
-
-### 💳 Billing
-- [x] Подключение к Google Play (`startConnection`)
-- [x] Запрос доступных подписок (`queryProductDetailsAsync`)
-- [x] Запуск покупки (`launchBillingFlow`)
-- [x] Подтверждение покупки (`acknowledgePurchase`) — **критично!**
-- [x] Проверка активных подписок при старте (`queryPurchasesAsync`)
-- [x] Обработка отмены и ошибок (`PurchasesUpdatedListener`)
-
-### 🔥 Firebase
-- [x] **Analytics** — логирование ключевых событий:
-  - `billing_query_products_start`
-  - `billing_products_loaded`
-  - `billing_purchase_start`
-  - `billing_purchase_success`
-  - `billing_purchase_error`
-- [x] **Firestore** — серверное хранение статуса подписки:
-  - Коллекция `subscriptions`
-  - Документ по `deviceId` (генерируется при первом запуске, сохраняется в `SharedPreferences`)
-  - Поля: `deviceId`, `productId`, `isPremium`, `purchaseToken`, `updatedAt`
+| **Coil** | 2.6.0 | Загрузка изображений |
+| **Coroutines + StateFlow** | 1.7.3 | Асинхронность |
 
 ---
 
@@ -92,110 +89,67 @@
 
 ```
 app/src/main/java/com/example/subscription/
-├── MainActivity.kt
-├── SubscriptionApp.kt              # Application + Koin
+├── MainActivity.kt                      # BottomNavigation: Подписки + Фоторедактор
+├── SubscriptionApp.kt                   # Application + Koin
 ├── di/
-│   └── AppModule.kt                # DI-модули (Koin)
+│   └── AppModule.kt                     # DI-модули
 ├── domain/model/
-│   └── SubscriptionTier.kt         # Модель подписки
+│   └── SubscriptionTier.kt
 ├── data/
 │   ├── billing/
-│   │   ├── BillingRepository.kt    # Интерфейс
-│   │   └── BillingRepositoryImpl.kt # Реализация PBL 8.3.0
-│   └── firebase/
-│       └── FirebaseSubscriptionDataSource.kt # Firestore sync
-└── presentation/
-    ├── SubscriptionViewModel.kt
-    └── screens/
-        └── SubscriptionScreen.kt   # Compose UI
+│   │   ├── BillingRepository.kt         # Интерфейс
+│   │   └── BillingRepositoryImpl.kt     # Реализация PBL 8.3.0
+│   ├── firebase/
+│   │   └── FirebaseSubscriptionDataSource.kt
+│   └── remote/
+│       ├── GeminiService.kt             # Google Generative AI SDK
+│       └── SubscriptionVerifyService.kt # Placeholder для серверной верификации
+├── presentation/
+│   ├── SubscriptionViewModel.kt
+│   ├── PhotoEditorViewModel.kt          # AI + фильтры
+│   └── screens/
+│       ├── SubscriptionScreen.kt
+│       └── PhotoEditorScreen.kt         # Photo Picker + Gemini
+└── utils/
+    └── ImageFilters.kt                  # Bitmap фильтры
 ```
 
 ---
 
-## 🔑 Как подключить Firebase
+## 🔑 Ключи API
 
-### Шаг 1: Создай проект в Firebase Console
-1. Перейди на [Firebase Console](https://console.firebase.google.com/)
-2. Нажми **"Add project"** → введи название → **Create project**
+### Google Play Billing
+- Создай подписки в [Google Play Console](https://play.google.com/console/)
+- Добавь тестовый аккаунт в License Testing
 
-### Шаг 2: Добавь Android-приложение
-1. На главной странице проекта нажми **Android-иконку** (Add app)
-2. Введи:
-   - **Package name:** `com.example.subscription`
-   - **App nickname:** `Pet Subscription`
-3. Нажми **Register app**
+### Firebase
+1. Создай проект в [Firebase Console](https://console.firebase.google.com/)
+2. Зарегистрируй Android-приложение с package `com.example.subscription`
+3. Скачай `google-services.json` и положи в `app/`
 
-### Шаг 3: Скачай конфигурационный файл
-- Скачай **`google-services.json`**
-- Положи его в `app/google-services.json` (**замени placeholder**)
-- В консоли нажми **Next → Next → Continue to console**
+### Gemini API
+1. Получи ключ в [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Замени в `di/AppModule.kt`:
+   ```kotlin
+   GeminiService(apiKey = "YOUR_GEMINI_API_KEY_HERE")
+   ```
 
-> ⚠️ **Важно:** файл `google-services.json` уже добавлен в `.gitignore` и не попадёт в репозиторий. Никогда не коммить его в публичный репозиторий!
-
-### Шаг 4: Настрой Firestore Rules (для теста)
-В Firebase Console перейди в **Firestore Database → Rules** и установи:
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /subscriptions/{document} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-> Для production используй auth-based rules!
+> ⚠️ **Никогда не коммить API ключи!** `google-services.json` и ключи уже добавлены в `.gitignore`.
 
 ---
 
-## 🧪 Как запустить
+## 🧪 Запуск
 
-### 1. Google Play Console
-- Создай приложение и загрузи APK/AAB во **внутреннее тестирование**
-- Перейди в **Monetize → Products → Subscriptions**
-- Создай 2 подписки с ID:
-  - `premium_monthly`
-  - `premium_yearly`
-- Для каждой подписки создай **Base Plan** (месяц / год)
-- Добавь тестовый Gmail в **License Testing**
-
-### 2. Сборка
 ```bash
 ./gradlew :app:assembleDebug
 ```
 
-Или открой в Android Studio и нажми **Run**.
-
-> ⚠️ **BillingClient работает только на реальном устройстве** или эмуляторе с Google Play services.
-
----
-
-## 📊 Просмотр данных в Firebase
-
-| Сервис | Где смотреть | Что увидишь |
-|--------|-------------|-------------|
-| **Analytics** | Console → Analytics → Events | `billing_purchase_success`, `billing_purchase_error` и др. |
-| **Firestore** | Console → Firestore → Data | Коллекция `subscriptions` с deviceId-документами |
-
----
-
-## 🎯 Что спросят на собеседовании
-
-| Вопрос | Ответ в коде |
-|--------|-------------|
-| «Что будет, если не вызвать acknowledgePurchase?» | Покупка автоматически вернётся через 3 дня |
-| «Как обработать upgrade/downgrade?» | Нужно использовать `SubscriptionUpdateParams` с `replacementMode` |
-| «Почему не ktx?» | PBL 8.3.0 ktx требует Kotlin 2.x; core API + `suspendCancellableCoroutine` даёт полный контроль |
-| «Как тестировать подписки?» | Google Play Console → тестовые аккаунты + тестовые SKU |
-| «Где хранить статус подписки?» | Локально (StateFlow) + Firestore для кросс-девайс синхронизации |
+> BillingClient работает только на реальном устройстве.  
+> Gemini API требует интернет-соединения.
 
 ---
 
 ## 🌳 Git Workflow (Gitflow)
-
-Проект использует классический **Gitflow** — оптимально для мобильных приложений с релизами в Google Play.
 
 ```
 main    ───●────────────────●─────────────●───────
@@ -213,33 +167,25 @@ hotfix/                                    ●────●
 
 | Ветка | Назначение |
 |-------|-----------|
-| `main` | Production-код. Каждый коммит = тег версии в Google Play |
+| `main` | Production-код. Каждый коммит = тег версии |
 | `develop` | Интеграция фич. Сборка для internal testing |
-| `feature/*` | Новая функциональность. От `develop`, в `develop` |
-| `release/*` | Релиз: бамп версии, финальное тестирование. В `main` + `develop` |
-| `hotfix/*` | Критический баг в production. От `main`, в `main` + `develop` |
+| `feature/*` | Новая функциональность |
+| `release/*` | Релиз: бамп версии, финальное тестирование |
+| `hotfix/*` | Критический баг в production |
 
 Подробное руководство: [`docs/GITFLOW.md`](docs/GITFLOW.md)
 
-### Быстрые алиасы
+---
 
-Добавь в `~/.gitconfig`:
-
-```ini
-[alias]
-    feat-start = "!f() { git checkout develop && git pull origin develop && git checkout -b feature/$1; }; f"
-    feat-finish = "!f() { git checkout develop && git merge --no-ff feature/$1 && git branch -d feature/$1 && git push origin --delete feature/$1; }; f"
-    release-start = "!f() { git checkout develop && git pull origin develop && git checkout -b release/v$1; }; f"
-    release-finish = "!f() { git checkout main && git merge --no-ff release/v$1 && git tag -a v$1 -m \"Release v$1\" && git push origin main --tags && git checkout develop && git merge --no-ff release/v$1 && git push origin develop && git branch -d release/v$1; }; f"
-```
-
-### Conventional Commits
+## 📝 Conventional Commits
 
 ```
 feat(billing): add queryPurchasesAsync on app start
 fix(ui): correct premium badge visibility after rotation
 refactor(repository): extract BillingRepository interface
 chore(gradle): update Billing Library to 8.3.0
+feat(ai): integrate Gemini photo analyzer
+test(billing): add unit tests for purchase validation
 ```
 
 ---
