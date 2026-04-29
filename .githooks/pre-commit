@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-commit hook для Android-проекта
+# Проверяет google-services.json и базовый lint
+
+echo "Running pre-commit checks..."
+
+# 1. Проверяем, что google-services.json не попадает в коммит
+if git diff --cached --name-only | grep -q "google-services.json"; then
+    echo "ERROR: google-services.json detected in staged files!"
+    echo "This file contains sensitive API keys and must not be committed."
+    echo "Add it to .gitignore and remove from staging:"
+    echo "  git reset HEAD app/google-services.json"
+    exit 1
+fi
+
+# 2. Проверяем отсутствие hardcoded API keys в Kotlin-коде
+if git diff --cached --name-only | grep '\.kt$' | xargs grep -l "apiKey.*=.*\"" 2>/dev/null; then
+    echo "WARNING: Potential hardcoded API key found in Kotlin files. Please review."
+fi
+
+# 3. Проверяем размер коммита (не больше 10MB)
+MAX_SIZE=10485760
+STAGED_SIZE=$(git diff --cached --stat | tail -1 | awk '{print $3}')
+if [ "$STAGED_SIZE" -gt "$MAX_SIZE" ] 2>/dev/null; then
+    echo "ERROR: Commit size exceeds 10MB. Consider using Git LFS for large files."
+    exit 1
+fi
+
+echo "Pre-commit checks passed!"

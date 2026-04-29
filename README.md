@@ -193,6 +193,57 @@ service cloud.firestore {
 
 ---
 
+## 🌳 Git Workflow (Gitflow)
+
+Проект использует классический **Gitflow** — оптимально для мобильных приложений с релизами в Google Play.
+
+```
+main    ───●────────────────●─────────────●───────
+           ↑                ↑             ↑
+           v1.0.0           v1.1.0         v1.1.1
+
+develop ───●───●───●───●───●───●───●───●───●───●────────
+              ↑       ↑       ↑       ↑
+feature/     ●───────●       ●───────●
+
+release/             ●─────────●
+
+hotfix/                                    ●────●
+```
+
+| Ветка | Назначение |
+|-------|-----------|
+| `main` | Production-код. Каждый коммит = тег версии в Google Play |
+| `develop` | Интеграция фич. Сборка для internal testing |
+| `feature/*` | Новая функциональность. От `develop`, в `develop` |
+| `release/*` | Релиз: бамп версии, финальное тестирование. В `main` + `develop` |
+| `hotfix/*` | Критический баг в production. От `main`, в `main` + `develop` |
+
+Подробное руководство: [`docs/GITFLOW.md`](docs/GITFLOW.md)
+
+### Быстрые алиасы
+
+Добавь в `~/.gitconfig`:
+
+```ini
+[alias]
+    feat-start = "!f() { git checkout develop && git pull origin develop && git checkout -b feature/$1; }; f"
+    feat-finish = "!f() { git checkout develop && git merge --no-ff feature/$1 && git branch -d feature/$1 && git push origin --delete feature/$1; }; f"
+    release-start = "!f() { git checkout develop && git pull origin develop && git checkout -b release/v$1; }; f"
+    release-finish = "!f() { git checkout main && git merge --no-ff release/v$1 && git tag -a v$1 -m \"Release v$1\" && git push origin main --tags && git checkout develop && git merge --no-ff release/v$1 && git push origin develop && git branch -d release/v$1; }; f"
+```
+
+### Conventional Commits
+
+```
+feat(billing): add queryPurchasesAsync on app start
+fix(ui): correct premium badge visibility after rotation
+refactor(repository): extract BillingRepository interface
+chore(gradle): update Billing Library to 8.3.0
+```
+
+---
+
 ## 📄 Лицензия
 
 MIT — используй как шаблон для своих проектов.
