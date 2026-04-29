@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Pet Subscription</string>
+    <string name="subscribe_monthly">Подписаться Monthly</string>
+    <string name="subscribe_yearly">Подписаться Yearly</string>
+    <string name="premium_content">Премиум контент открыт!</string>
+    <string name="locked_content">Контент заблокирован. Оформите подписку.</string>
+    <string name="loading">Загрузка...</string>
+    <string name="error_format">Ошибка: %s</string>
+    <string name="price_format">%s / %s</string>
+</resources>
