@@ -66,7 +66,7 @@ private fun MainScreen() {
     ) { innerPadding ->
         when (selectedIndex) {
             0 -> SubscriptionScreen(modifier = Modifier.padding(innerPadding))
-            1 -> PhotoEditorScreen()
+            1 -> PhotoEditorScreen(modifier = Modifier.padding(innerPadding))
         }
     }
 }

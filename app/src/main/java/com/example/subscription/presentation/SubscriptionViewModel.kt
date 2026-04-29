@@ -40,9 +40,8 @@ class SubscriptionViewModel(
         }
     }
 
-    fun clearError() {
-        // BillingRepository не имеет публичного метода очистки ошибки,
-        // но можно добавить при необходимости
+    fun enableDemoPremium() {
+        billingRepository.enableDemoPremium()
     }
 
     override fun onCleared() {

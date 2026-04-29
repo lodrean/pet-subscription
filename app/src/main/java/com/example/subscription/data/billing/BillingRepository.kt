@@ -21,4 +21,5 @@ interface BillingRepository {
     suspend fun queryProducts()
     fun launchBillingFlow(activity: Activity, tier: SubscriptionTier)
     suspend fun checkExistingPurchases()
+    fun enableDemoPremium()
 }
