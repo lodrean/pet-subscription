@@ -46,6 +46,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun PhotoEditorScreen(
+    modifier: Modifier = Modifier,
     viewModel: PhotoEditorViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
@@ -71,7 +72,7 @@ fun PhotoEditorScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
@@ -193,6 +194,8 @@ fun PhotoEditorScreen(
             }
             else -> {}
         }
+
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 

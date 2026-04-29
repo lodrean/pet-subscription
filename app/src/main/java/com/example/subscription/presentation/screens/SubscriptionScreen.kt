@@ -65,12 +65,28 @@ fun SubscriptionScreen(
         if (isLoading) {
             CircularProgressIndicator()
         } else if (!isPremium) {
-            products.forEach { tier ->
-                SubscriptionCard(
-                    tier = tier,
-                    onClick = { viewModel.purchase(activity, tier) }
+            if (products.isNotEmpty()) {
+                products.forEach { tier ->
+                    SubscriptionCard(
+                        tier = tier,
+                        onClick = { viewModel.purchase(activity, tier) }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            } else {
+                Text(
+                    text = "Подписки не найдены. Убедитесь, что они созданы в Google Play Console.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.enableDemoPremium() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Демо-режим: активировать премиум")
+                }
             }
         }
 

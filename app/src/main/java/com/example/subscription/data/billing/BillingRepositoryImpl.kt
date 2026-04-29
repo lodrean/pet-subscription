@@ -104,6 +104,15 @@ class BillingRepositoryImpl(
         billingClient.endConnection()
     }
 
+    override fun enableDemoPremium() {
+        _isPremium.value = true
+        _errorMessage.value = "Demo mode: premium activated locally"
+        val bundle = Bundle().apply {
+            putBoolean("demo_mode", true)
+        }
+        firebaseAnalytics.logEvent("billing_demo_premium_enabled", bundle)
+    }
+
     override suspend fun queryProducts() {
         _isLoading.value = true
         firebaseAnalytics.logEvent("billing_query_products_start", Bundle())
