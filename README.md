@@ -1,112 +1,23 @@
-# Pet Subscription — Android Billing + Firebase Demo
+# 🛒 Pet Subscription — Android Billing + Firebase
 
-Минимальный пет-проект для демонстрации работы с **Google Play Billing Library 8.3.0** на Kotlin + Jetpack Compose + Koin + **Firebase**.
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blueviolet?logo=kotlin)](https://kotlinlang.org/)
+[![Compose](https://img.shields.io/badge/Jetpack%20Compose-2024.02.00-brightgreen?logo=android)](https://developer.android.com/jetpack/compose)
+[![Billing](https://img.shields.io/badge/Google%20Play%20Billing-8.3.0-orange?logo=google-play)](https://developer.android.com/google/play/billing)
+[![Firebase](https://img.shields.io/badge/Firebase-Analytics%20%7C%20Firestore-yellow?logo=firebase)](https://firebase.google.com/)
 
-## Стек
+> Минимальный пет-проект для демонстрации организации подписочного сервиса в Android с серверной синхронизацией через Firebase.
 
-- **Kotlin** 1.9.22
-- **Jetpack Compose** (BOM 2024.02.00)
-- **Google Play Billing Library** 8.3.0 (`billing` core, без ktx — используем `suspendCancellableCoroutine`)
-- **Firebase** (Analytics + Firestore)
-- **Koin** 3.5.3 (DI)
-- **Coroutines + StateFlow**
-- **MVVM**
+---
 
-## Что реализовано
+## 📹 Демо
 
-### Billing
-1. **BillingRepository** — обёртка над `BillingClient`:
-   - Подключение к Google Play (`startConnection`)
-   - Запрос продуктов (`queryProductDetailsAsync`)
-   - Запуск покупки (`launchBillingFlow`)
-   - Подтверждение покупки (`acknowledgePurchase`)
-   - Проверка активных подписок при старте (`queryPurchasesAsync`)
+| Экран подписок | Премиум контент |
+| :---: | :---: |
+| *(добавь скриншот)* | *(добавь скриншот)* |
 
-### Firebase
-2. **Firebase Analytics** — логирование ключевых событий:
-   - `billing_query_products_start` — начало загрузки продуктов
-   - `billing_products_loaded` — продукты загружены
-   - `billing_purchase_start` — пользователь нажал "Купить"
-   - `billing_purchase_success` — покупка подтверждена
-   - `billing_purchase_error` — ошибка на любом этапе
+---
 
-3. **Firestore** — серверное хранение статуса подписки:
-   - Коллекция `subscriptions`
-   - Документ по `deviceId` (генерируется при первом запуске и сохраняется в SharedPreferences)
-   - Поля: `deviceId`, `productId`, `isPremium`, `purchaseToken`, `updatedAt`
-
-## 🔑 Ключевой файл: `google-services.json`
-
-Для работы Firebase **обязателен** реальный конфигурационный файл:
-
-### Как получить:
-
-1. Перейди на [Firebase Console](https://console.firebase.google.com/)
-2. Нажми **"Add project"** (или используй существующий)
-3. Введи название проекта, например `pet-subscription`
-4. Отключи Google Analytics если не нужен (или оставь — мы используем его)
-5. Дождись создания проекта
-6. Нажми **Android icon** (добавить приложение)
-7. В поле **Android package name** введи: `com.example.subscription`
-8. В поле **App nickname** введи: `Pet Subscription`
-9. Нажми **Register app**
-10. Скачай **`google-services.json`**
-11. **Положи его в `pet-subscription/app/google-services.json`** (замени placeholder)
-12. В консоли Firebase нажми **"Next"** и заверши настройку
-
-> ⚠️ **Важно:** Без реального `google-services.json` приложение не соберётся (падает на плагине `com.google.gms.google-services`).
-
-### Что внутри `google-services.json` (не редактируй руками):
-
-- `project_number` и `project_id` — идентификаторы проекта
-- `mobilesdk_app_id` — ID приложения в Firebase
-- `api_key.current_key` — публичный API ключ (можно ограничить в Google Cloud Console)
-
-## Как запустить
-
-### 1. Создай подписки в Google Play Console
-
-1. Загрузи APK/AAB во **внутреннее тестирование**
-2. Перейди в **Monetize → Products → Subscriptions**
-3. Создай 2 подписки с ID:
-   - `premium_monthly`
-   - `premium_yearly`
-4. Для каждой подписки создай **Base Plan** (месяц / год)
-5. Добавь тестовый аккаунт Gmail в **License Testing**
-
-### 2. Настрой Firebase
-
-- Выполни шаги из раздела **"Как получить google-services.json"** выше
-- Замени placeholder файл на реальный
-
-### 3. Настрой Firestore Security Rules (для теста)
-
-В Firebase Console перейди в **Firestore Database → Rules** и временно установи:
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /subscriptions/{document} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-> ⚠️ Для production используй auth-based rules!
-
-### 4. Собери и запусти
-
-```bash
-./gradlew :app:assembleDebug
-```
-
-Или открой в Android Studio и нажми **Run**.
-
-> **Важно:** BillingClient работает только на реальном устройстве или эмуляторе с Google Play services.
-
-## Архитектура
+## 🏗 Архитектура
 
 ```
 ┌─────────────────┐
@@ -134,21 +45,154 @@ service cloud.firestore {
 └───────┘  └─────────────────┘
 ```
 
-## Ключевые моменты для собеседования
+---
 
-- **Acknowledge** — Google требует подтвердить покупку в течение 3 дней, иначе она вернётся
-- **queryPurchasesAsync** — используем при старте, чтобы восстановить подписку после переустановки
-- **Pending purchases** — в PBL 8+ `enablePendingPurchases(PendingPurchasesParams)` обязателен
-- **ProductDetailsResponseListener** в PBL 8.3.0 возвращает `QueryProductDetailsResult`, а не `List<ProductDetails>` (API изменился)
-- **Firestores sync** — статус подписки дублируется в облако для аналитики и кросс-девайс синхронизации
+## 🚀 Стек
 
-## Что почитать
+| Технология | Версия | Назначение |
+|-----------|--------|-----------|
+| **Kotlin** | 1.9.22 | Язык |
+| **Jetpack Compose** | BOM 2024.02.00 | UI |
+| **Google Play Billing** | 8.3.0 (core) | Покупки и подписки |
+| **Firebase Analytics** | 33.7.0 | Аналитика событий |
+| **Firebase Firestore** | 33.7.0 | Облачное хранение статуса |
+| **Koin** | 3.5.3 | DI |
+| **Coroutines + StateFlow** | 1.7.3 | Асинхронность и реактивность |
 
-- [Официальная документация PBL](https://developer.android.com/google/play/billing)
-- [Релиз-ноты PBL](https://developer.android.com/google/play/billing/release-notes)
-- [Firebase Android Setup](https://firebase.google.com/docs/android/setup)
-- [Firebase Analytics Events](https://firebase.google.com/docs/analytics/events?platform=android)
+> Почему `billing` core вместо `billing-ktx`?  
+> PBL 8.3.0 ktx требует Kotlin 2.x. В пет-проекте используем core API с `suspendCancellableCoroutine` — это демонстрирует более глубокое понимание корутин на собеседовании.
 
-## Лицензия
+---
+
+## ✨ Что реализовано
+
+### 💳 Billing
+- [x] Подключение к Google Play (`startConnection`)
+- [x] Запрос доступных подписок (`queryProductDetailsAsync`)
+- [x] Запуск покупки (`launchBillingFlow`)
+- [x] Подтверждение покупки (`acknowledgePurchase`) — **критично!**
+- [x] Проверка активных подписок при старте (`queryPurchasesAsync`)
+- [x] Обработка отмены и ошибок (`PurchasesUpdatedListener`)
+
+### 🔥 Firebase
+- [x] **Analytics** — логирование ключевых событий:
+  - `billing_query_products_start`
+  - `billing_products_loaded`
+  - `billing_purchase_start`
+  - `billing_purchase_success`
+  - `billing_purchase_error`
+- [x] **Firestore** — серверное хранение статуса подписки:
+  - Коллекция `subscriptions`
+  - Документ по `deviceId` (генерируется при первом запуске, сохраняется в `SharedPreferences`)
+  - Поля: `deviceId`, `productId`, `isPremium`, `purchaseToken`, `updatedAt`
+
+---
+
+## 📁 Структура проекта
+
+```
+app/src/main/java/com/example/subscription/
+├── MainActivity.kt
+├── SubscriptionApp.kt              # Application + Koin
+├── di/
+│   └── AppModule.kt                # DI-модули (Koin)
+├── domain/model/
+│   └── SubscriptionTier.kt         # Модель подписки
+├── data/
+│   ├── billing/
+│   │   ├── BillingRepository.kt    # Интерфейс
+│   │   └── BillingRepositoryImpl.kt # Реализация PBL 8.3.0
+│   └── firebase/
+│       └── FirebaseSubscriptionDataSource.kt # Firestore sync
+└── presentation/
+    ├── SubscriptionViewModel.kt
+    └── screens/
+        └── SubscriptionScreen.kt   # Compose UI
+```
+
+---
+
+## 🔑 Как подключить Firebase
+
+### Шаг 1: Создай проект в Firebase Console
+1. Перейди на [Firebase Console](https://console.firebase.google.com/)
+2. Нажми **"Add project"** → введи название → **Create project**
+
+### Шаг 2: Добавь Android-приложение
+1. На главной странице проекта нажми **Android-иконку** (Add app)
+2. Введи:
+   - **Package name:** `com.example.subscription`
+   - **App nickname:** `Pet Subscription`
+3. Нажми **Register app**
+
+### Шаг 3: Скачай конфигурационный файл
+- Скачай **`google-services.json`**
+- Положи его в `app/google-services.json` (**замени placeholder**)
+- В консоли нажми **Next → Next → Continue to console**
+
+> ⚠️ **Важно:** файл `google-services.json` уже добавлен в `.gitignore` и не попадёт в репозиторий. Никогда не коммить его в публичный репозиторий!
+
+### Шаг 4: Настрой Firestore Rules (для теста)
+В Firebase Console перейди в **Firestore Database → Rules** и установи:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /subscriptions/{document} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+> Для production используй auth-based rules!
+
+---
+
+## 🧪 Как запустить
+
+### 1. Google Play Console
+- Создай приложение и загрузи APK/AAB во **внутреннее тестирование**
+- Перейди в **Monetize → Products → Subscriptions**
+- Создай 2 подписки с ID:
+  - `premium_monthly`
+  - `premium_yearly`
+- Для каждой подписки создай **Base Plan** (месяц / год)
+- Добавь тестовый Gmail в **License Testing**
+
+### 2. Сборка
+```bash
+./gradlew :app:assembleDebug
+```
+
+Или открой в Android Studio и нажми **Run**.
+
+> ⚠️ **BillingClient работает только на реальном устройстве** или эмуляторе с Google Play services.
+
+---
+
+## 📊 Просмотр данных в Firebase
+
+| Сервис | Где смотреть | Что увидишь |
+|--------|-------------|-------------|
+| **Analytics** | Console → Analytics → Events | `billing_purchase_success`, `billing_purchase_error` и др. |
+| **Firestore** | Console → Firestore → Data | Коллекция `subscriptions` с deviceId-документами |
+
+---
+
+## 🎯 Что спросят на собеседовании
+
+| Вопрос | Ответ в коде |
+|--------|-------------|
+| «Что будет, если не вызвать acknowledgePurchase?» | Покупка автоматически вернётся через 3 дня |
+| «Как обработать upgrade/downgrade?» | Нужно использовать `SubscriptionUpdateParams` с `replacementMode` |
+| «Почему не ktx?» | PBL 8.3.0 ktx требует Kotlin 2.x; core API + `suspendCancellableCoroutine` даёт полный контроль |
+| «Как тестировать подписки?» | Google Play Console → тестовые аккаунты + тестовые SKU |
+| «Где хранить статус подписки?» | Локально (StateFlow) + Firestore для кросс-девайс синхронизации |
+
+---
+
+## 📄 Лицензия
 
 MIT — используй как шаблон для своих проектов.
