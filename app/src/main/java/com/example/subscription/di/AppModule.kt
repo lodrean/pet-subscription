@@ -5,6 +5,7 @@ import com.example.subscription.data.billing.BillingRepository
 import com.example.subscription.data.billing.BillingRepositoryImpl
 import com.example.subscription.data.firebase.FirebaseSubscriptionDataSource
 import com.example.subscription.data.remote.GeminiService
+import com.example.subscription.data.security.SecureApiKeyProvider
 import com.example.subscription.presentation.PhotoEditorViewModel
 import com.example.subscription.presentation.SubscriptionViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -38,8 +39,8 @@ val billingModule = module {
         )
     }
     single<BillingRepository> { BillingRepositoryImpl(get(), get(), get()) }
+    single { SecureApiKeyProvider(get()) }
     single {
-        // Замените на свой API key из Google AI Studio: https://aistudio.google.com/app/apikey
-        GeminiService(apiKey = "YOUR_GEMINI_API_KEY_HERE")
+        GeminiService(apiKey = get<SecureApiKeyProvider>().getApiKey())
     }
 }
