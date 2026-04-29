@@ -32,6 +32,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SubscriptionScreen(
+    modifier: Modifier = Modifier,
     viewModel: SubscriptionViewModel = koinViewModel()
 ) {
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
@@ -41,7 +42,7 @@ fun SubscriptionScreen(
     val activity = LocalContext.current as Activity
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),

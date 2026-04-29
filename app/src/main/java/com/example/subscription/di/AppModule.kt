@@ -4,6 +4,8 @@ import android.content.Context
 import com.example.subscription.data.billing.BillingRepository
 import com.example.subscription.data.billing.BillingRepositoryImpl
 import com.example.subscription.data.firebase.FirebaseSubscriptionDataSource
+import com.example.subscription.data.remote.GeminiService
+import com.example.subscription.presentation.PhotoEditorViewModel
 import com.example.subscription.presentation.SubscriptionViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
@@ -16,6 +18,7 @@ import java.util.UUID
 
 val appModule = module {
     viewModel { SubscriptionViewModel(get()) }
+    viewModel { PhotoEditorViewModel(get()) }
 }
 
 val billingModule = module {
@@ -35,4 +38,8 @@ val billingModule = module {
         )
     }
     single<BillingRepository> { BillingRepositoryImpl(get(), get(), get()) }
+    single {
+        // Замените на свой API key из Google AI Studio: https://aistudio.google.com/app/apikey
+        GeminiService(apiKey = "YOUR_GEMINI_API_KEY_HERE")
+    }
 }
