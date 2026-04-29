@@ -11,5 +11,5 @@ captures
 local.properties
 
 # Firebase
-google-services.json
+# google-services.json — dummy файл закоммичен для CI
 
